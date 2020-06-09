@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+    postgresql:
+        image: postgres:11.8
+        environment:
+            - POSTGRES_PASSWORD=6XjwVbNPqyFHUTdoXfV4DgEQV8B
+            - POSTGRES_USERNAME=postgres
+        restart: always
+        ports:
+            - 0.0.0.0:5432:5432
+        volumes:
+            - /Container/postgresql/postgresql-data:/var/lib/postgresql/data
