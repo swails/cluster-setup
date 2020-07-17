@@ -29,23 +29,23 @@ all:
     batwoman:
       ansible_host: 192.168.1.26
       ansible_python_interpreter: /usr/bin/python3
-      ansible_become_password: <root password>
+      ansible_become_password: <sudo password>
     green-lantern:
       ansible_host: 192.168.1.140
       ansible_python_interpreter: /usr/bin/python3
-      ansible_become_password: <root password>
+      ansible_become_password: <sudo password>
     green-arrow:
       ansible_host: 192.168.1.141
       ansible_python_interpreter: /usr/bin/python3
-      ansible_become_password: <root password>
+      ansible_become_password: <sudo password>
     wonder-woman:
       ansible_host: 192.168.1.142
       ansible_python_interpreter: /usr/bin/python3
-      ansible_become_password: <root password>
+      ansible_become_password: <sudo password>
     supergirl:
       ansible_host: 192.168.1.143
       ansible_python_interpreter: /usr/bin/python3
-      ansible_become_password: <root password>
+      ansible_become_password: <sudo password>
   children:
     cuda:
       hosts:
