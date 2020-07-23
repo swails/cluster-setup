@@ -1,0 +1,13 @@
+- hosts: all
+  tasks:
+    - name: Check if reboot is needed
+      shell: |
+        if [ -f /var/run/reboot-required ]; then
+          cat /var/run/reboot-required
+          cat /var/run/reboot-required.pkgs
+        else
+          echo "No reboot required!"
+        fi
+      register: reboot
+    - debug:
+        msg: "{{ reboot.stdout_lines }}"

@@ -56,4 +56,21 @@ all:
     nogpu:
       hosts:
         green-arrow:
+    amber:
+      hosts:
+        green-lantern:
+        green-arrow:
+        wonder-woman:
+        supergirl:
 ```
+
+## Updating the remote hosts
+
+There is an Ansible playbook that simply updates, upgrades, and reboots:
+`update-and-reboot.yml`.
+
+## Setting up as Jenkins agents
+
+The playbook `setup-worker-nodes.yml` will install the necessary packages,
+3rd-party repositories, keys, user accounts, and ssh access keys required
+for nodes to be configured as a Jenkins worker agent.

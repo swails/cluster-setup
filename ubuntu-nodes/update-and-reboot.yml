@@ -1,0 +1,12 @@
+- hosts: amber
+  become: yes
+  become_user: root
+  tasks:
+    - name: 'Update packages'
+      apt:
+        update_cache: yes
+        upgrade: yes
+        autoclean: yes
+        autoremove: yes
+    - name: 'Reboot the machine'
+      reboot:
