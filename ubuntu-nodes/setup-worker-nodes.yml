@@ -105,3 +105,15 @@
       loop:
         - jenkins-cpu
         - jenkins-gpu
+
+    - name: Copy the Intel compilers from ansible host
+      synchronize:
+        src: /opt/intel
+        dest: /opt/intel
+        archive: yes
+
+    - name: Copy the PGI compilers from ansible host
+      synchronize:
+        src: /opt/pgi
+        dest: /opt/pgi
+        archive: yes

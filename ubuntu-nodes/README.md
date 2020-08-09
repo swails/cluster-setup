@@ -74,3 +74,5 @@ There is an Ansible playbook that simply updates, upgrades, and reboots:
 The playbook `setup-worker-nodes.yml` will install the necessary packages,
 3rd-party repositories, keys, user accounts, and ssh access keys required
 for nodes to be configured as a Jenkins worker agent.
+
+To run this playbook, run `ansible-playbook setup-worker-nodes.yml`
