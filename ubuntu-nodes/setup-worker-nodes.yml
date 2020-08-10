@@ -106,14 +106,53 @@
         - jenkins-cpu
         - jenkins-gpu
 
-    - name: Copy the Intel compilers from ansible host
-      synchronize:
-        src: /opt/intel
-        dest: /opt/intel
-        archive: yes
+    - name: Remove compiler directories
+      file:
+        state: absent
+        path: '/opt/{{ item }}'
+      loop:
+        - pgi
+        - intel
 
-    - name: Copy the PGI compilers from ansible host
-      synchronize:
-        src: /opt/pgi
-        dest: /opt/pgi
-        archive: yes
+    - name: Create the compiler directories
+      file:
+        state: directory
+        path: '/opt/'
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Set passwordless sudo
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - name: Copy the compiler tarballs
+      copy:
+        src: '/opt/{{ item }}-compilers.tgz'
+        dest: '/opt/'
+        owner: root
+        group: root
+      loop:
+        - intel
+        - pgi
+
+    - name: Untar the compiler tarballs
+      shell:
+        chdir: '/opt/'
+        cmd: 'tar zxfp /opt/{{ item }}-compilers.tgz'
+        warn: false
+      loop:
+        - pgi
+        - intel
+
+    - name: Remove the compiler tarballs
+      file:
+        path: '/opt/{{ item }}-compilers.tgz'
+        state: absent
+      loop:
+        - pgi
+        - intel
