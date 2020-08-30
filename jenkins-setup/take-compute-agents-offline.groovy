@@ -1,6 +1,7 @@
 /**
  * This script will disable all of the Jenkins agent nodes that run jobs
  */
+import jenkins.model.Jenkins
 
 List computeAgents = []
 
