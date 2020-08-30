@@ -12,21 +12,20 @@ pipeline {
             steps {
                 build '/manage-jenkins/agents-offline'
             }
-            post { cleanup { deleteDir() } }
         }
 
         stage('Update compute agents') {
             steps {
                 sh(label: 'Update', script: 'ansible-playbook ubuntu-nodes/update-and-reboot.yml')
             }
-            post { cleanup { deleteDir() } }
         }
 
         stage('Bring agents back online') {
             steps {
                 build '/manage-jenkins/agents-online'
             }
-            post { cleanup { deleteDir() } }
         }
     }
+
+    post { cleanup { deleteDir() } }
 }
