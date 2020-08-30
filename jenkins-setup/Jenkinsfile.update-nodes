@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 
 pipeline {
-    agent none
+    agent { label 'ansible' }
 
     triggers {
         cron 'H 0 * * 6'
@@ -9,7 +9,6 @@ pipeline {
 
     stages {
         stage('Bring nodes offline') {
-            agent none
             steps {
                 build '/manage-jenkins/agents-offline'
             }
@@ -17,8 +16,6 @@ pipeline {
         }
 
         stage('Update compute agents') {
-            agent { label 'ansible' }
-
             steps {
                 sh(label: 'Update', script: 'ansible-playbook ubuntu-nodes/update-and-reboot.yml')
             }
@@ -26,7 +23,6 @@ pipeline {
         }
 
         stage('Bring agents back online') {
-            agent none
             steps {
                 build '/manage-jenkins/agents-online'
             }
