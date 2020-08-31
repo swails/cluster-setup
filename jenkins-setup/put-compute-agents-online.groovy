@@ -21,6 +21,6 @@ Jenkins.instance.computers.each { computer ->
             println('WARN: Launching agent is not supported!')
         }
     } else {
-        println("INFO: ${computer.nodeName} is back online!")
+        println("INFO: ${computer.nodeName} is already online!")
     }
 }
