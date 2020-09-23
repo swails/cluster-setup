@@ -65,6 +65,18 @@ all:
         batwoman:
 ```
 
+## Invoking playbooks with specific hosts
+
+By default, each playbook will operate on a set of hosts that usually make the
+most sense. Sometimes, we want to perform actions on a greater or smaller
+subset of the available hosts. In this case, you can use `--extra-vars` to pass
+the `hosts` option to the Ansible playbook to limit or broaden the scope of the
+playbook. For example:
+
+```bash
+ansible-playbook setup-worker-nodes.yml --extra-vars="hosts=batwoman"
+```
+
 ## Updating the remote hosts
 
 There is an Ansible playbook that simply updates, upgrades, and reboots:
