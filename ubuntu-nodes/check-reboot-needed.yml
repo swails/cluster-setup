@@ -1,4 +1,4 @@
-- hosts: "{{ hosts | default('all') }}"
+- hosts: "{{ varhosts | default('all') }}"
   tasks:
     - name: Check if reboot is needed
       shell: |

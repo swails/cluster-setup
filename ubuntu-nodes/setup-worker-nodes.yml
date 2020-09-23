@@ -1,4 +1,4 @@
-- hosts: "{{ hosts | default('amber') }}"
+- hosts: "{{ varhosts | default('amber') }}"
   become: yes
   become_user: root
   tasks:

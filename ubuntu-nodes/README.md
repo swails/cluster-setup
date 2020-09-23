@@ -74,7 +74,7 @@ the `hosts` option to the Ansible playbook to limit or broaden the scope of the
 playbook. For example:
 
 ```bash
-ansible-playbook setup-worker-nodes.yml --extra-vars="hosts=batwoman"
+ansible-playbook setup-worker-nodes.yml --extra-vars="varhosts=batwoman"
 ```
 
 ## Updating the remote hosts
