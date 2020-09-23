@@ -62,6 +62,7 @@ all:
         green-arrow:
         wonder-woman:
         supergirl:
+        batwoman:
 ```
 
 ## Updating the remote hosts

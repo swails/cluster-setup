@@ -51,7 +51,7 @@
     - name: Reboot
       reboot:
 
-    - name: Configure docker to use the nvidia runtime
+    - name: Configure docker to store images in /scratch
       copy:
         src: config-files/docker-daemon.json
         dest: /etc/docker/daemon.json
