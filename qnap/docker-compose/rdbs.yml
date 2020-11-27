@@ -1,4 +1,4 @@
-version: "3"
+version: "3.4"
 
 # Just throw up some random passwords that will get reset in the container
 services:
