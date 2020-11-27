@@ -58,9 +58,9 @@ services:
       - DATABASE_SERVER=postgresql
       - SECRET_KEY=<secretkey>
       - DEBUG=false
-      - ALLOWED_HOSTS="localhost,garage.theswails.com,garage.jasonswails.com,192.168.1.3"
+      - ALLOWED_HOSTS=localhost,garage.theswails.com,garage.jasonswails.com,192.168.1.55
     ports:
-      - 0.0.0.0:8082:8081
+      - 0.0.0.0:8082:80
     depends_on:
       - postgresql
 
