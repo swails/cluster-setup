@@ -5,13 +5,13 @@
     - name: Install aptitude using apt
       apt:
         name: aptitude
-        state: latest
+        state: present
         update_cache: yes
         force_apt_get: yes
     - name: Install required system packages
       apt:
         name: '{{ item }}'
-        state: latest
+        state: present
         update_cache: yes
       loop:
         - apt-transport-https
@@ -34,7 +34,7 @@
       apt:
         update_cache: yes
         name: docker-ce
-        state: latest
+        state: present
 
     - name: Add graphics drivers PPA
       apt_repository:
@@ -46,10 +46,17 @@
       apt:
         name: nvidia-driver-440
         autoremove: yes
-        state: latest
+        state: present
+
+    - name: Check if reboot is required
+      stat:
+        path: /var/run/reboot-required
+      register: reboot_required_file
 
     - name: Reboot
       reboot:
+      when:
+        reboot_required_file.stat.exists
 
     - name: Configure docker to store images in /scratch
       copy:
@@ -130,29 +137,12 @@
         line: '%sudo ALL=(ALL) NOPASSWD: ALL'
         validate: 'visudo -cf %s'
 
-    - name: Copy the compiler tarballs
-      copy:
+    - name: Untar the compiler tarballs
+      unarchive:
+        remote_src: no
         src: '/opt/{{ item }}-compilers.tgz'
         dest: '/opt/'
         owner: root
-        group: root
-      loop:
-        - intel
-        - pgi
-
-    - name: Untar the compiler tarballs
-      shell:
-        chdir: '/opt/'
-        cmd: 'tar zxfp /opt/{{ item }}-compilers.tgz'
-        warn: false
-      loop:
-        - pgi
-        - intel
-
-    - name: Remove the compiler tarballs
-      file:
-        path: '/opt/{{ item }}-compilers.tgz'
-        state: absent
       loop:
         - pgi
         - intel

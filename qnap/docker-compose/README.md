@@ -1,11 +1,10 @@
 # rdbs.yml
 
-This docker-compose script defines the relational database containers that run
-on QNAP. The intent here is for the QNAP NAS to serve as a general-purpose
-database server for non-intense database loads. It has the benefit of redundant
-storage by virtue of its RAID-5 setup and so the database payloads are safer
-there. It is also a more lightly-used resource with much more storage while
-still having a dual-core CPU (Intel Celeron) and 8 GB of RAM.
+This docker-compose script defines the containers that run on QNAP. The intent
+here is for the QNAP NAS to serve as a general-purpose server for things like
+databases and web applications that can run on (relatively) resource-limited
+hardware. It has the benefit of redundant storage by virtue of its RAID-5 setup
+and so the container payloads are safer there.
 
 ## Migrating existing PostgreSQL databases
 
