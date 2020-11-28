@@ -30,7 +30,12 @@ pipeline {
         stage('Merge gates') {
             parallel {
                 stage('Lint the ansible scripts') {
-                    agent { docker { image: 'swails/ansible:latest' } }
+                    agent {
+                        docker {
+                            image 'swails/ansible:latest'
+                            alwaysPull true
+                        }
+                    }
 
                     steps {
                         unstash 'source'
