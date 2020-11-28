@@ -42,7 +42,7 @@ pipeline {
                         dir(env.build_dir) {
                             sh(label: 'Linting the ansible playbooks',
                                script: """#!/bin/sh -ex
-                                ansible-lint ubuntu-nodes/*.yml
+                                HOME="${env.WORKSPACE}" ansible-lint ubuntu-nodes/*.yml
                                """)
                         }
                     }
