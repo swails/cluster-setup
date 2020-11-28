@@ -19,9 +19,9 @@ pipeline {
             steps {
                 script {
                     dir(env.build_dir) {
-                        env.GIT_COMMIT = checkout scm
+                        env.GIT_COMMIT = checkout(scm).GIT_COMMIT
                         env.GIT_COMMIT_SHORT = (env.GIT_COMMIT).substring(0, 5)
-                        echo "INFO: Checked out ${(env.GIT_COMMIT)} [short ${(env.GIT_COMMIT_SHORT)}]"
+                        echo "INFO: Checked out ${env.GIT_COMMIT} [short ${env.GIT_COMMIT_SHORT}]"
                     }
                 }
 
