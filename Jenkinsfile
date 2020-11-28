@@ -17,8 +17,11 @@ pipeline {
             agent { label 'linux' }
 
             steps {
-                dir(env.build_dir) {
-                    checkout scm
+                script {
+                    dir(env.build_dir) {
+                        env.GIT_COMMIT = checkout scm
+                        env.GIT_COMMIT_SHORT = (env.GIT_COMMIT).substring(0, 5)
+                    }
                 }
 
                 stash name: 'source', includes: '**', useDefaultExcludes: false
@@ -78,7 +81,7 @@ pipeline {
 
                     steps {
                         script {
-                            String tagName = env.BRANCH_NAME == 'master' ? 'latest' : 'test'
+                            String tagName = env.BRANCH_NAME == 'master' ? env.GIT_COMMIT_SHORT : 'test'
                             String imageTag = "swails/qnap-nginx:${tagName}"
                             unstash 'source'
                             dir("${env.build_dir}/qnap/docker-containers/nginx") {
