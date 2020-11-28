@@ -41,8 +41,6 @@ services:
   grafana:
     image: grafana/grafana:7.3.4
     restart: always
-    ports:
-      - 0.0.0.0:3000:3000
     volumes:
       - grafana-data:/var/lib/grafana
       - grafana-etc:/etc/grafana
@@ -59,10 +57,14 @@ services:
       - SECRET_KEY=<secretkey>
       - DEBUG=false
       - ALLOWED_HOSTS=localhost,garage.theswails.com,garage.jasonswails.com,192.168.1.55
-    ports:
-      - 0.0.0.0:8082:80
     depends_on:
       - postgresql
+
+  local-nginx:
+    image: swails/qnap-nginx:1b725
+    restart: always
+    ports:
+      - 0.0.0.0:8082:80
 
 volumes:
   postgresql-data:
