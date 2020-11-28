@@ -35,6 +35,10 @@
         update_cache: yes
         name: docker-ce
         state: present
+    - name: Install docker-compose
+      apt:
+        name: docker-compose
+        state: present
 
     - name: Add graphics drivers PPA
       apt_repository:
@@ -112,14 +116,6 @@
       loop:
         - jenkins-cpu
         - jenkins-gpu
-
-    - name: Remove compiler directories
-      file:
-        state: absent
-        path: '/opt/{{ item }}'
-      loop:
-        - pgi
-        - intel
 
     - name: Create the compiler directories
       file:
