@@ -72,7 +72,7 @@ pipeline {
                     agent { label 'docker' }
 
                     when {
-                        github.fileChangedIn(path: 'qnap/docker-containers/')
+                        expression { github.fileChangedIn(path: 'qnap/docker-containers/') }
                         beforeAgent true
                     }
 
