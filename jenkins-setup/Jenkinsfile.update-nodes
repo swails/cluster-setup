@@ -1,4 +1,7 @@
 #!/usr/bin/env groovy
+import groovy.transform.Field
+
+@Field boolean buildFailed = false
 
 pipeline {
     agent { label 'ansible' }
@@ -16,13 +19,24 @@ pipeline {
 
         stage('Update compute agents') {
             steps {
-                sh(label: 'Update', script: 'ansible-playbook ubuntu-nodes/update-and-reboot.yml')
+                script {
+                    try {
+                        sh(label: 'Update', script: 'ansible-playbook ubuntu-nodes/update-and-reboot.yml')
+                    } catch {
+                        buildFailed = true
+                    }
+                }
             }
         }
 
         stage('Bring agents back online') {
             steps {
                 build '/manage-jenkins/agents-online'
+                script {
+                    if (buildFailed) {
+                        currentBuild.result = 'FAILURE'
+                    }
+                }
             }
         }
     }
