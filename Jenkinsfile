@@ -76,7 +76,7 @@ pipeline {
                     agent { label 'docker' }
 
                     when {
-                        expression { github.fileChangedIn(path: 'qnap/docker-containers/') }
+                        expression { github.fileChangedIn(path: 'qnap/docker-containers/') && (env.CHANGE_ID || env.BRANCH_NAME == 'master') }
                         beforeAgent true
                     }
 
