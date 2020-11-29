@@ -6,7 +6,7 @@ server {
     # app_servers
     location / {
 
-        proxy_pass         http://127.0.0.1:8889;
+        proxy_pass         http://192.168.1.3:8889;
         proxy_redirect     off;
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;

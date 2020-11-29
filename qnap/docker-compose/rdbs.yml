@@ -61,7 +61,7 @@ services:
       - postgresql
 
   local-nginx:
-    image: swails/qnap-nginx:1b725
+    image: swails/qnap-nginx:1e791
     restart: always
     ports:
       - 0.0.0.0:8082:80
