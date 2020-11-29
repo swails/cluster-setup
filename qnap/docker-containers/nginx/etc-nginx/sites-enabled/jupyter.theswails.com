@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name jupyter.jasonswails.com;
+    server_name jupyter.theswails.com;
 
     # Proxy connections to the application servers
     # app_servers
