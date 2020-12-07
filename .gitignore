@@ -38,3 +38,5 @@ tags
 .history
 
 # End of https://www.toptal.com/developers/gitignore/api/ansible,vim,visualstudiocode
+
+**/__pycache__/**
