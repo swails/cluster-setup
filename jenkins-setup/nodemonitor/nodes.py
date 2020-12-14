@@ -4,6 +4,7 @@ import concurrent.futures
 import enum
 import logging
 import pathlib
+import time
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -29,6 +30,10 @@ class SSHConfig:
             ssh_options['password'] = self.password
         return ssh_options
 
+class NodeStatus(enum.Enum):
+    On = "On"
+    Off = "Off"
+
 class Node:
 
     def __init__(self, name: str, local_ip_address: str, mac_address: str):
@@ -36,11 +41,14 @@ class Node:
         self.local_ip_address = local_ip_address
         self.mac_address = mac_address
 
+        self._time_shutdown = None
+        self._time_woken = None
+
     async def is_available(self) -> bool:
         open_fut = asyncio.open_connection(self.local_ip_address, 22)
         try:
-            _, writer = await asyncio.wait_for(open_fut, 1)
-        except concurrent.futures.TimeoutError:
+            _, writer = await asyncio.wait_for(open_fut, 3)
+        except (concurrent.futures.TimeoutError, OSError):
             return False
         else:
             writer.close()
@@ -58,12 +66,40 @@ class Node:
         all_users = set(result.stdout.strip().split())
         return not all_users.issubset({'jenkins', ''})
 
+    async def wakeup(self):
+        if await self.is_available():
+            LOGGER.info(f"{self.name} is already awake")
+            return True
+        LOGGER.info(f'WoL {self.name} - Initiating wake-on-lan')
+        self._time_woken = time.time()
+        send_magic_packet(self.mac_address.lower())
+        for _ in range(20):
+            # Wait up to 2 minutes to wake up (is_available will wait 3 seconds if it's off, too)
+            await asyncio.sleep(3)
+            LOGGER.info(f"WoL {self.name} - Checking node availability")
+            available = await self.is_available()
+            if available:
+                LOGGER.info(f"WoL {self.name} - now available!")
+                return True
+        LOGGER.warning(f"WoL {self.name} - Did not respond >2 minutes after WoL sent!")
+        # One last try
+        return await self.is_available()
+
+    @property
+    def time_shutdown(self) -> float:
+        return 0.0 if self._time_shutdown is None else self._time_shutdown
+
+    @property
+    def time_woken(self) -> float:
+        return 0.0 if self._time_woken is None else self._time_woken
+
     async def shutdown(self, admin_config: SSHConfig, force: bool = False):
         if await self.is_in_use(admin_config) and not force:
             LOGGER.info(f'{self.name} is in use. Not shutting down')
             return
         if await self.is_available():
-            await self.run_ssh_command(admin_config, 'sudo shutdown +2')
+            self._time_shutdown = time.time()
+            await self.run_ssh_command(admin_config, 'sudo shutdown +1')
         else:
             LOGGER.info(f'{self.name} cannot shut down, not even awake')
 
@@ -96,6 +132,9 @@ class JenkinsAgent:
         self.num_executors = num_executors
         self.busy_executors = busy_executors
 
+        self._time_last_job_finished = None
+        self._time_booted = None
+
     def __repr__(self):
         return (f"<{self.__class__.__name__} {self.name}; labels={self.labels}; "
                 f"{self.num_executors} executors ({self.busy_executors} busy); "
@@ -114,15 +153,22 @@ class JenkinsAgent:
         if self.node is None:
             LOGGER.info(f'Cannot wake up {self.name} - I have no known node')
             return False
-        LOGGER.info(f'WoL {self.name} - Initiating wake-on-lan')
-        send_magic_packet(self.node.mac_address.lower())
-        LOGGER.info(f'WoL {self.name} - Waiting for boot to start')
-        await asyncio.sleep(30)
-        LOGGER.info(f'WoL {self.name} - Checking node availability')
-        return await self.is_available()
+        return await self.node.wakeup()
 
     async def shutdown(self, admin_config: SSHConfig, force: bool = False):
         if self.node is None:
             LOGGER.info(f'Cannot shut down {self.name} - I have no known node')
             return
         await self.node.shutdown(admin_config, force)
+
+    @property
+    def time_shutdown(self):
+        if self.node is None:
+            return None
+        return self.node.time_shutdown
+
+    @property
+    def time_woken(self):
+        if self.node is None:
+            return None
+        return self.node.time_woken

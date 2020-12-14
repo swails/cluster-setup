@@ -16,7 +16,7 @@ class NodeStatus(str, enum.Enum):
 class SchedulerConfig:
     idle_time_before_launch: float
     idle_time_before_shutdown: float
-#   node_priority: List[Node]
+    node_priority: List[Node]
 
 
 @dataclass
