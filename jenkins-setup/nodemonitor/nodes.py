@@ -1,4 +1,6 @@
 """ Classes for managing Jenkins agents """
+from __future__ import annotations
+
 import asyncio
 import concurrent.futures
 import enum
@@ -16,19 +18,24 @@ LOGGER = logging.getLogger(__name__)
 @dataclass
 class SSHConfig:
     username: str
-    private_key: Optional[pathlib.Path] = None
-    passphrase: Optional[str] = None
-    password: Optional[str] = None
+    password: str
+    private_key: asyncssh.SSHKey = None
 
     def options(self) -> dict:
         ssh_options = dict(username=self.username)
         if self.private_key:
             ssh_options['client_keys'] = str(self.private_key)
-            if self.passphrase:
-                ssh_options['passphrase'] = self.passphrase
+            if self.password:
+                ssh_options['passphrase'] = self.password
         else:
             ssh_options['password'] = self.password
         return ssh_options
+
+    @classmethod
+    def create(cls, username: str, password: str, private_key: Optional[str] = None) -> SSHConfig:
+        if private_key is not None:
+            private_key = asyncssh.import_private_key(private_key, passphrase=password)
+        return cls(username=username, password=password, private_key=private_key)
 
 class NodeStatus(enum.Enum):
     On = "On"
@@ -130,7 +137,7 @@ class JenkinsAgent:
         self.status = status
         self.node = NODES.get(self.name, None)
         self.num_executors = num_executors
-        self.busy_executors = busy_executors
+        self._busy_executors = busy_executors
 
         self._time_last_job_finished = None
         self._time_booted = None
@@ -153,13 +160,37 @@ class JenkinsAgent:
         if self.node is None:
             LOGGER.info(f'Cannot wake up {self.name} - I have no known node')
             return False
+        self._time_booted = time.time()
         return await self.node.wakeup()
+
+    @property
+    def time_last_job_finished(self):
+        if self._time_last_job_finished is None:
+            return 0
+        return self._time_last_job_finished
+
+    @property
+    def time_booted(self):
+        if self._time_booted is None:
+            return 0
+        return self._time_booted
 
     async def shutdown(self, admin_config: SSHConfig, force: bool = False):
         if self.node is None:
             LOGGER.info(f'Cannot shut down {self.name} - I have no known node')
             return
         await self.node.shutdown(admin_config, force)
+
+
+    @property
+    def busy_executors(self):
+        return self._busy_executors
+
+    @busy_executors.setter
+    def busy_executors(self, value):
+        if self._busy_executors > 0 and value == 0:
+            self._time_last_job_finished = time.time()
+        self._busy_executors = value
 
     @property
     def time_shutdown(self):

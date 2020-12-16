@@ -70,6 +70,12 @@ services:
     ports:
       - 0.0.0.0:8082:80
 
+  nodemonitor:
+    image: swails/nodemonitor:1
+    restart: always
+    environment:
+      - NODEMONITOR_ENCRYPTION_PASSWORD=<secret>
+
 volumes:
   postgresql-data:
   influxdb-data:

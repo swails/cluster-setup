@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 class QueuedJob:
 
-    all_nodes_offline = re.compile(r'^All nodes of label .(\w+). are offline')
+    all_nodes_offline = re.compile(r'^All nodes of label .([\w&]+). are offline')
     waiting_for_node = re.compile(r'^Waiting for next available executor on .(\w+).')
     some_nodes_offline = re.compile(r'.([\w \-]+). is offline')
 

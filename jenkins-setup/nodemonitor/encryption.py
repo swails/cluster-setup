@@ -75,3 +75,30 @@ def encode(string):
 
 def decode(string):
     return base64.b64decode(string.encode("utf-8"))
+
+
+if __name__ == '__main__':
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser()
+    parser.add_argument("-p", "--password", dest="password", required=True,
+                        help="Password to convert to an encryption key")
+    parser.add_argument("-t", "--text", dest="text", required=True,
+                        help="The text to encrypt (or decrypt) with the password")
+    parser.add_argument("-f", "--file", dest="is_file", default=False, action="store_true",
+                        help="If true, text is a file name")
+    parser.add_argument("-d", "--decrypt", action="store_true", dest="decrypt",
+                        default=False, help="Use this flag to decrypt instead of encrypt")
+
+    args = parser.parse_args()
+
+    if args.is_file:
+        with open(args.text, "r") as f:
+            text = f.read()
+    else:
+        text = args.text
+
+    if args.decrypt:
+        print(decrypt(text, args.password))
+    else:
+        print(encrypt(text, args.password))

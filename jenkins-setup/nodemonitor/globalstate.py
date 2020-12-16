@@ -25,14 +25,11 @@ class GlobalState:
     jenkins_instance: Jenkins
     influx_writer: InfluxWriter
     privileged_ssh_config: SSHConfig
-    jenkins_ssh_config: SSHConfig
     task_config: SchedulerConfig
 
     # Populated from Jenkins
     job_queue: List[QueuedJob] = field(default_factory=list)
     nodes: List[JenkinsAgent] = field(default_factory=list)
     shutdown: bool = False
-    time_at_last_status_change: Dict[str, float] = field(default_factory=dict)
-    last_status: Dict[str, NodeStatus] = field(default_factory=dict)
     initialized: bool = False
     last_time_queue_empty: float = 0
