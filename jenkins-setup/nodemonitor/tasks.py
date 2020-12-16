@@ -111,5 +111,5 @@ async def _shutdown_idle_agents(state: GlobalState):
             await state.influx_writer.write_point(node.name, 0)
             try:
                 await node.shutdown(state.privileged_ssh_config, force=False)
-            except asyncssh.misc.ConnectionLost:
-                LOGGER.info(f"Lost connection to {node.name}... ignoring")
+            except (asyncssh.misc.ConnectionLost, ConnectionRefusedError) as err:
+                LOGGER.info(f"Lost/refused connection to {node.name}... ignoring {err}")
