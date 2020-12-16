@@ -107,6 +107,15 @@
       with_file:
         - public_keys/jenkins.pub
 
+    - name: Add public ssh key for swails access
+      authorized_key:
+        exclusive: yes
+        key: '{{ item }}'
+        user: swails
+        state: present
+      with_file:
+        - public_keys/id_ed25519_node_monitor.pub
+
     - name: Create Jenkins workspaces for CPU and CUDA agents
       file:
         state: directory
