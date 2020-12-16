@@ -93,7 +93,7 @@ async def _shutdown_idle_agents(state: GlobalState):
         if time.time() - agent.time_last_job_finished > state.task_config.idle_time_before_shutdown:
             LOGGER.info(f"Shutdown - {name} finished last job more than {state.task_config.idle_time_before_shutdown} "
                         f"seconds ago. Candidate for shutdown.")
-            time_since_last_boot = time.time() - agent.time_booted
+            time_since_last_boot = time.time() - agent.time_woken
             if time_since_last_boot < state.task_config.idle_time_before_shutdown:
                 LOGGER.info(f"Shutdown - {name} only booted {time_since_last_boot} seconds ago. Not shutting down yet")
             else:

@@ -48,17 +48,19 @@ class Node:
         self.local_ip_address = local_ip_address
         self.mac_address = mac_address
 
-        self._time_shutdown = None
-        self._time_woken = None
+        self.time_shutdown = 0
+        self.time_woken = 0
 
     async def is_available(self) -> bool:
         open_fut = asyncio.open_connection(self.local_ip_address, 22)
         try:
             _, writer = await asyncio.wait_for(open_fut, 3)
         except (concurrent.futures.TimeoutError, OSError):
+            self.time_shutdown = self.time_shutdown or time.time()
             return False
         else:
             writer.close()
+            self.time_woken = self.time_woken or time.time()
             return True
 
     async def run_ssh_command(self, config: SSHConfig, command: str):
@@ -78,7 +80,7 @@ class Node:
             LOGGER.info(f"{self.name} is already awake")
             return True
         LOGGER.info(f'WoL {self.name} - Initiating wake-on-lan')
-        self._time_woken = time.time()
+        self.time_woken = time.time()
         send_magic_packet(self.mac_address.lower())
         for _ in range(20):
             # Wait up to 2 minutes to wake up (is_available will wait 3 seconds if it's off, too)
@@ -92,20 +94,12 @@ class Node:
         # One last try
         return await self.is_available()
 
-    @property
-    def time_shutdown(self) -> float:
-        return 0.0 if self._time_shutdown is None else self._time_shutdown
-
-    @property
-    def time_woken(self) -> float:
-        return 0.0 if self._time_woken is None else self._time_woken
-
     async def shutdown(self, admin_config: SSHConfig, force: bool = False):
         if await self.is_in_use(admin_config) and not force:
             LOGGER.info(f'{self.name} is in use. Not shutting down')
             return
         if await self.is_available():
-            self._time_shutdown = time.time()
+            self.time_shutdown = time.time()
             try:
                 await self.run_ssh_command(admin_config, 'sudo shutdown +1')
             except asyncssh.misc.ConnectionLost:
@@ -142,8 +136,7 @@ class JenkinsAgent:
         self.num_executors = num_executors
         self._busy_executors = busy_executors
 
-        self._time_last_job_finished = None
-        self._time_booted = None
+        self._time_last_job_finished = time.time()
 
     def __repr__(self):
         return (f"<{self.__class__.__name__} {self.name}; labels={self.labels}; "
@@ -163,7 +156,6 @@ class JenkinsAgent:
         if self.node is None:
             LOGGER.info(f'Cannot wake up {self.name} - I have no known node')
             return False
-        self._time_booted = time.time()
         return await self.node.wakeup()
 
     @property
@@ -172,18 +164,11 @@ class JenkinsAgent:
             return 0
         return self._time_last_job_finished
 
-    @property
-    def time_booted(self):
-        if self._time_booted is None:
-            return 0
-        return self._time_booted
-
     async def shutdown(self, admin_config: SSHConfig, force: bool = False):
         if self.node is None:
             LOGGER.info(f'Cannot shut down {self.name} - I have no known node')
             return
         await self.node.shutdown(admin_config, force)
-
 
     @property
     def busy_executors(self):
