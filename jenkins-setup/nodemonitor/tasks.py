@@ -10,28 +10,27 @@ LOGGER = logging.getLogger(__name__)
 
 
 async def populate_global_state(state: GlobalState):
-    state.jenkins_instance.fetch_computers()
-    queued_jobs = state.jenkins_instance.get_queue()
-    for agent_name, agent in state.jenkins_instance.nodes.items():
-        state.time_at_last_status_change[agent_name] = time.time()
-        state.last_status[agent_name] = NodeStatus.Busy if agent.busy_executors else NodeStatus.Idle
+    await state.jenkins_instance.fetch_computers()
+    queued_jobs = await state.jenkins_instance.get_queue()
     state.job_queue.extend(queued_jobs)
 
 
 async def poll_running_jobs(state: GlobalState, frequency: float):
     """ Runs until state indicates a shutdown, polling with the given frequency """
+    LOGGER.info("Launching the job polling task...")
     while not state.shutdown:
-        queued_jobs = await state.jenkins_instance.get_queue()
         LOGGER.info("Fetching build queue and executor status")
+        queued_jobs = await state.jenkins_instance.get_queue()
+        LOGGER.info(f"Found {len(queued_jobs)} queued jobs")
         state.job_queue.clear()
         state.job_queue.extend(queued_jobs)
         await state.jenkins_instance.fetch_computers()
-        await _update_state_from_fetch(state)
         await asyncio.sleep(frequency)
 
 
 async def shutdown_handler(state: GlobalState, frequency: float):
     """ Handles the shutdown by closing the jenkins instance when requested """
+    LOGGER.info("Launching the shutdown handler...")
     while not state.shutdown:
         await asyncio.sleep(frequency)
     LOGGER.info("Shutdown detected - closing the jenkins instance")
@@ -41,28 +40,15 @@ async def shutdown_handler(state: GlobalState, frequency: float):
 
 async def node_manager(state: GlobalState, frequency: float):
     """ Handles shutting down and waking Jenkins instances """
+    LOGGER.info("Launching the node manager task...")
     while not state.shutdown:
         await asyncio.sleep(frequency)
-        # Maybe we can improve this at some point, but for now simply power on everyone.
+        # Maybe we can improve this at some point, but for now simply power on everyone and don't
+        # shutdown unless we have an empty queue
         if state.job_queue:
             await _boot_all_agents(state)
         else:
             await _shutdown_idle_agents(state)
-
-
-async def _update_state_from_fetch(state: GlobalState):
-    # Update the job queue
-    if not state.job_queue:
-        state.last_time_queue_empty = time.time()
-
-    # Update the computers
-    for agent_name, agent in state.jenkins_instance.nodes.items():
-        current_status = NodeStatus.Busy if agent.busy_executors else NodeStatus.Idle
-        old_status = state.last_status[agent_name]
-        if old_status is not current_status:
-            LOGGER.info(f"Agent {agent_name} went from {old_status} to {current_status}")
-            state.time_at_last_status_change[agent_name] = time.time()
-        state.last_status[agent_name] = current_status
 
 
 async def _boot_all_agents(state: GlobalState) -> bool:
@@ -86,7 +72,6 @@ async def _boot_all_agents(state: GlobalState) -> bool:
 
 async def _shutdown_idle_agents(state: GlobalState):
     await state.jenkins_instance.fetch_computers()
-    await _update_state_from_fetch(state)
     do_not_shutdown = []
     shutdown_list = []
     for name, agent in state.jenkins_instance.nodes.items():
