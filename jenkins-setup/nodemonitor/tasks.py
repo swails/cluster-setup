@@ -3,6 +3,8 @@ import asyncio
 import logging
 import time
 
+import asyncssh
+
 from .globalstate import GlobalState, NodeStatus
 from .nodes import JenkinsAgent
 
@@ -66,7 +68,11 @@ async def _boot_all_agents(state: GlobalState) -> bool:
     if not nodes_to_boot:
         return False
     tasks = [node.wakeup() for node in nodes_to_boot]
-    await asyncio.gather(tasks)
+    for node in nodes_to_boot:
+        await state.influx_writer.write_point(node.name, 1)
+    await asyncio.gather(*tasks)
+    # Build the job to bring all of the agents back online
+    await state.jenkins_instance.build_job("manage-jenkins/agents-online")
     return True
 
 
@@ -77,7 +83,7 @@ async def _shutdown_idle_agents(state: GlobalState):
     for name, agent in state.jenkins_instance.nodes.items():
         if agent.node is None:
             continue
-        if not agent.node.is_available():
+        if not await agent.node.is_available():
             LOGGER.info(f"Shutdown - ignoring {name} as it is not available")
             continue
         if agent.busy_executors:
@@ -86,17 +92,24 @@ async def _shutdown_idle_agents(state: GlobalState):
             continue
         if time.time() - agent.time_last_job_finished > state.task_config.idle_time_before_shutdown:
             LOGGER.info(f"Shutdown - {name} finished last job more than {state.task_config.idle_time_before_shutdown} "
-                        f"seconds. Candidate for shutdown.")
+                        f"seconds ago. Candidate for shutdown.")
             time_since_last_boot = time.time() - agent.time_booted
             if time_since_last_boot < state.task_config.idle_time_before_shutdown:
                 LOGGER.info(f"Shutdown - {name} only booted {time_since_last_boot} seconds ago. Not shutting down yet")
             else:
                 LOGGER.info(f"Shutdown - {name} has been idle for {time_since_last_boot} seconds. Marking shutdown")
-                shutdown_list.append(agent.node)
+                if agent.node in shutdown_list:
+                    LOGGER.info(f"Shutdown - {name} is already in the list!")
+                else:
+                    shutdown_list.append(agent.node)
 
     for node in shutdown_list:
         if node in do_not_shutdown:
             LOGGER.info(f"Not shutting down node {node.name} since it is still in use in another agent")
         else:
             LOGGER.info(f"Shutting down {node.name} since it is idle")
-            await node.shutdown(state.privileged_ssh_config, force=False)
+            await state.influx_writer.write_point(node.name, 0)
+            try:
+                await node.shutdown(state.privileged_ssh_config, force=False)
+            except asyncssh.misc.ConnectionLost:
+                LOGGER.info(f"Lost connection to {node.name}... ignoring")

@@ -10,6 +10,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 from nodemonitor import NodemonitorConfiguration, GlobalState, Jenkins, InfluxWriter, tasks, SchedulerConfig
 
+logging.getLogger("asyncssh").setLevel(logging.WARNING)
+
 async def main():
 
     import argparse

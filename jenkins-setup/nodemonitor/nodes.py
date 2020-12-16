@@ -106,12 +106,15 @@ class Node:
             return
         if await self.is_available():
             self._time_shutdown = time.time()
-            await self.run_ssh_command(admin_config, 'sudo shutdown +1')
+            try:
+                await self.run_ssh_command(admin_config, 'sudo shutdown +1')
+            except asyncssh.misc.ConnectionLost:
+                LOGGER.info(f"Connection lost while shutting down {self.name}")
         else:
             LOGGER.info(f'{self.name} cannot shut down, not even awake')
 
 NODES = {
-    'Batman': Node('Batman', '192.168.1.3', 'C8:60:00:78:00:0C'),
+#   'Batman': Node('Batman', '192.168.1.3', 'C8:60:00:78:00:0C'),
     'Green Lantern': Node('Green Lantern', '192.168.1.140', '04:D9:F5:B9:F7:0B'),
     'Green Arrow': Node('Green Arrow', '192.168.1.141', '1C:69:7A:31:52:21'),
     'Wonder Woman': Node('Wonder Woman', '192.168.1.142', '00:D8:61:FF:31:47'),
