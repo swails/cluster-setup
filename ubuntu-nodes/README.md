@@ -30,22 +30,32 @@ all:
       ansible_host: 192.168.1.26
       ansible_python_interpreter: /usr/bin/python3
       ansible_become_password: <sudo password>
+      ansible_ssh_pass: <ssh password>
+      ansible_ssh_user: swails
     green-lantern:
       ansible_host: 192.168.1.140
       ansible_python_interpreter: /usr/bin/python3
       ansible_become_password: <sudo password>
+      ansible_ssh_pass: <ssh password>
+      ansible_ssh_user: swails
     green-arrow:
       ansible_host: 192.168.1.141
       ansible_python_interpreter: /usr/bin/python3
       ansible_become_password: <sudo password>
+      ansible_ssh_pass: <ssh password>
+      ansible_ssh_user: swails
     wonder-woman:
       ansible_host: 192.168.1.142
       ansible_python_interpreter: /usr/bin/python3
       ansible_become_password: <sudo password>
+      ansible_ssh_pass: <ssh password>
+      ansible_ssh_user: swails
     supergirl:
       ansible_host: 192.168.1.143
       ansible_python_interpreter: /usr/bin/python3
       ansible_become_password: <sudo password>
+      ansible_ssh_pass: <ssh password>
+      ansible_ssh_user: swails
   children:
     cuda:
       hosts:
