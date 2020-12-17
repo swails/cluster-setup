@@ -2,6 +2,7 @@
 import datetime
 import logging
 import re
+from functools import wraps
 from typing import List, Dict, Any, Union
 
 import aiohttp
@@ -9,6 +10,20 @@ import aiohttp
 from .nodes import JenkinsAgent, AgentStatus, Node
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _aio_ignore_exceptions(*exc_types):
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            try:
+                return await func(*args, **kwargs)
+            except exc_types as err:
+                LOGGER.warning(f"Catching and ignoring exception {err}")
+                return None
+        return wrapper
+    return decorator
+
 
 class QueuedJob:
 
@@ -99,6 +114,7 @@ class Jenkins:
         else:
             self.nodes[name] = JenkinsAgent(name, labels, status, num_executors, busy_executors)
 
+    @_aio_ignore_exceptions(aiohttp.client_exceptions.ClientError)
     async def _request_json(self,
                             verb: str,
                             href: str,
