@@ -22,7 +22,7 @@ class SSHConfig:
     private_key: asyncssh.SSHKey = None
 
     def options(self) -> dict:
-        ssh_options = dict(username=self.username)
+        ssh_options = dict(username=self.username, known_hosts=None)
         if self.private_key:
             ssh_options['client_keys'] = str(self.private_key)
             if self.password:
@@ -55,7 +55,7 @@ class Node:
         open_fut = asyncio.open_connection(self.local_ip_address, 22)
         try:
             _, writer = await asyncio.wait_for(open_fut, 3)
-        except (concurrent.futures.TimeoutError, OSError):
+        except Exception:
             self.time_shutdown = self.time_shutdown or time.time()
             return False
         else:
