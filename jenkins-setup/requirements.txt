@@ -1,2 +1,4 @@
 asyncssh>=2.4.2
 aiohttp>=3.7.3
+pycryptodome>=3.9.9
+wakeonlan==1.1.6
