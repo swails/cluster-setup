@@ -65,10 +65,16 @@ services:
       - postgresql
 
   local-nginx:
-    image: swails/qnap-nginx:2b7f2
+    image: swails/qnap-nginx:80c14
     restart: always
     ports:
       - 0.0.0.0:8082:80
+
+  nodemonitor:
+    image: swails/nodemonitor:1
+    restart: always
+    environment:
+      - NODEMONITOR_ENCRYPTION_PASSWORD=<secret>
 
 volumes:
   postgresql-data:
