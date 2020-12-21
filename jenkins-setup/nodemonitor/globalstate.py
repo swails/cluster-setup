@@ -1,7 +1,7 @@
 """ A global state of the running process """
 import enum
 from dataclasses import dataclass, field
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from .influx import InfluxWriter
 from .jenkins import Jenkins, QueuedJob
@@ -26,6 +26,7 @@ class GlobalState:
     influx_writer: InfluxWriter
     privileged_ssh_config: SSHConfig
     task_config: SchedulerConfig
+    poll_frequency: Union[float, int]
 
     # Populated from Jenkins
     job_queue: List[QueuedJob] = field(default_factory=list)
@@ -34,14 +35,10 @@ class GlobalState:
     initialized: bool = False
     last_time_queue_empty: float = 0
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._initialized = False
-
     async def initialize(self):
-        if self._initialized:
+        if self.initialized:
             return
         await self.jenkins_instance.fetch_computers()
         queued_jobs = await self.jenkins_instance.get_queue()
         self.job_queue.extend(queued_jobs)
-        self._initialized = True
+        self.initialized = True

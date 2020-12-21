@@ -27,6 +27,7 @@ def initialize_state() -> GlobalState:
         influx_writer=InfluxWriter(config.influx.hostname, config.influx.database, config.influx.username, config.influx.password),
         privileged_ssh_config=config.agent_ssh_config,
         task_config=SchedulerConfig(config.idle_time_before_launch, config.idle_time_before_shutdown, config.node_priority),
+        poll_frequency=config.poll_frequency,
     )
 
     return global_state
@@ -34,9 +35,9 @@ def initialize_state() -> GlobalState:
 async def main(global_state):
     await global_state.initialize()
     all_tasks = [
-        tasks.poll_running_jobs(global_state, config.poll_frequency),
-        tasks.shutdown_handler(global_state, config.poll_frequency),
-        tasks.node_manager(global_state, config.poll_frequency * 2),
+        tasks.poll_running_jobs(global_state),
+        tasks.shutdown_handler(global_state),
+        tasks.node_manager(global_state),
     ]
 
     await asyncio.gather(*all_tasks)

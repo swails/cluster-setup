@@ -11,7 +11,7 @@ from .nodes import JenkinsAgent
 LOGGER = logging.getLogger(__name__)
 
 
-async def poll_running_jobs(state: GlobalState, frequency: float):
+async def poll_running_jobs(state: GlobalState):
     """ Runs until state indicates a shutdown, polling with the given frequency """
     LOGGER.info("Launching the job polling task...")
     while not state.shutdown:
@@ -21,24 +21,24 @@ async def poll_running_jobs(state: GlobalState, frequency: float):
         state.job_queue.clear()
         state.job_queue.extend(queued_jobs)
         await state.jenkins_instance.fetch_computers()
-        await asyncio.sleep(frequency)
+        await asyncio.sleep(state.poll_frequency)
 
 
-async def shutdown_handler(state: GlobalState, frequency: float):
+async def shutdown_handler(state: GlobalState):
     """ Handles the shutdown by closing the jenkins instance when requested """
     LOGGER.info("Launching the shutdown handler...")
     while not state.shutdown:
-        await asyncio.sleep(frequency)
+        await asyncio.sleep(state.poll_frequency)
     LOGGER.info("Shutdown detected - closing the jenkins instance")
     await state.jenkins_instance.close()
     await state.influx_writer.close()
 
 
-async def node_manager(state: GlobalState, frequency: float):
+async def node_manager(state: GlobalState):
     """ Handles shutting down and waking Jenkins instances """
     LOGGER.info("Launching the node manager task...")
     while not state.shutdown:
-        await asyncio.sleep(frequency)
+        await asyncio.sleep(state.poll_frequency * 2)
         # Maybe we can improve this at some point, but for now simply power on everyone and don't
         # shutdown unless we have an empty queue
         if state.job_queue:
