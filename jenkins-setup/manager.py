@@ -12,8 +12,7 @@ from nodemonitor import NodemonitorConfiguration, GlobalState, Jenkins, InfluxWr
 
 logging.getLogger("asyncssh").setLevel(logging.WARNING)
 
-async def main():
-
+def initialize_state() -> GlobalState:
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config-file", default="config.ini", dest="config_file",
@@ -30,8 +29,10 @@ async def main():
         task_config=SchedulerConfig(config.idle_time_before_launch, config.idle_time_before_shutdown, config.node_priority),
     )
 
-    await tasks.populate_global_state(global_state)
+    return global_state
 
+async def main(global_state):
+    await global_state.initialize()
     all_tasks = [
         tasks.poll_running_jobs(global_state, config.poll_frequency),
         tasks.shutdown_handler(global_state, config.poll_frequency),
@@ -43,6 +44,12 @@ async def main():
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    global_state = initialize_state()
+    while True:
+        try:
+            loop.run_until_complete(main(global_state))
+        except Exception:
+            logging.exception("Unexpected exception. Trying to restart")
+            asyncio.sleep(5)
 
     logging.error("Exiting!")

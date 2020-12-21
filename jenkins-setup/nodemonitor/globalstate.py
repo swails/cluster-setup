@@ -33,3 +33,15 @@ class GlobalState:
     shutdown: bool = False
     initialized: bool = False
     last_time_queue_empty: float = 0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._initialized = False
+
+    async def initialize(self):
+        if self._initialized:
+            return
+        await self.jenkins_instance.fetch_computers()
+        queued_jobs = await self.jenkins_instance.get_queue()
+        self.job_queue.extend(queued_jobs)
+        self._initialized = True

@@ -11,12 +11,6 @@ from .nodes import JenkinsAgent
 LOGGER = logging.getLogger(__name__)
 
 
-async def populate_global_state(state: GlobalState):
-    await state.jenkins_instance.fetch_computers()
-    queued_jobs = await state.jenkins_instance.get_queue()
-    state.job_queue.extend(queued_jobs)
-
-
 async def poll_running_jobs(state: GlobalState, frequency: float):
     """ Runs until state indicates a shutdown, polling with the given frequency """
     LOGGER.info("Launching the job polling task...")
