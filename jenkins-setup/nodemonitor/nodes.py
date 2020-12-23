@@ -101,7 +101,7 @@ class Node:
         if await self.is_available():
             self.time_shutdown = time.time()
             try:
-                await self.run_ssh_command(admin_config, 'sudo shutdown +1')
+                await self.run_ssh_command(admin_config, 'sudo shutdown now')
             except asyncssh.misc.ConnectionLost:
                 LOGGER.info(f"Connection lost while shutting down {self.name}")
         else:
