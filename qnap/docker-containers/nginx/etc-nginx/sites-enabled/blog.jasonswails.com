@@ -1,7 +1,7 @@
 server {
     listen 80;
 
-    server_name grafana.theswails.com;
+    server_name blog.theswails.com;
 
     # Proxy connections to the application servers
     # app_servers
