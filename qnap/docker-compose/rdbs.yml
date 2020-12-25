@@ -59,8 +59,8 @@ services:
       - SECRET_KEY=<secretkey>
       - DEBUG=false
       - ALLOWED_HOSTS=localhost,garage.theswails.com,garage.jasonswails.com,192.168.1.55
-    ports:
-      - 0.0.0.0:8083:80
+#   ports:
+#     - 0.0.0.0:8083:80
     depends_on:
       - postgresql
 
