@@ -6,7 +6,7 @@ server {
     # Proxy connections to the application servers
     # app_servers
     location / {
-        proxy_pass         grafana:3000;
+        proxy_pass         blog:80;
         proxy_redirect     off;
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
