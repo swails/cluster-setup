@@ -34,23 +34,25 @@ def initialize_state() -> GlobalState:
 
 async def main(global_state):
     await global_state.initialize()
-    all_tasks = [
-        tasks.poll_running_jobs(global_state),
-        tasks.shutdown_handler(global_state),
-        tasks.node_manager(global_state),
-    ]
+    while True:
+        all_tasks = [
+            tasks.poll_running_jobs(global_state),
+            tasks.shutdown_handler(global_state),
+            tasks.node_manager(global_state),
+        ]
 
-    await asyncio.gather(*all_tasks)
+        await asyncio.gather(*all_tasks)
+
+        logging.info("Shutdown detected. Resetting tasks")
+        global_state.shutdown = False
 
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     global_state = initialize_state()
-    while True:
-        try:
-            loop.run_until_complete(main(global_state))
-        except Exception:
-            logging.exception("Unexpected exception. Trying to restart")
-            asyncio.sleep(5)
+    try:
+        loop.run_until_complete(main(global_state))
+    except Exception:
+        logging.exception("Unexpected exception. Trying to restart")
 
     logging.error("Exiting!")
