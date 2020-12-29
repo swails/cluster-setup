@@ -12,11 +12,11 @@ from .nodes import JenkinsAgent
 LOGGER = logging.getLogger(__name__)
 
 
-def safe_shutdown(func):
+def async_safe_shutdown(func):
     @wraps(func)
-    def wrapper(state: GlobalState):
+    async def wrapper(state: GlobalState):
         try:
-            return func(state)
+            return await func(state)
         except Exception:
             LOGGER.exception("Unexpected failure caught")
             state.shutdown = True
@@ -24,7 +24,7 @@ def safe_shutdown(func):
     return wrapper
 
 
-@safe_shutdown
+@async_safe_shutdown
 async def poll_running_jobs(state: GlobalState):
     """ Runs until state indicates a shutdown, polling with the given frequency """
     LOGGER.info("Launching the job polling task...")
@@ -38,7 +38,7 @@ async def poll_running_jobs(state: GlobalState):
         await asyncio.sleep(state.poll_frequency)
 
 
-@safe_shutdown
+@async_safe_shutdown
 async def shutdown_handler(state: GlobalState):
     """ Handles the shutdown by closing the jenkins instance when requested """
     LOGGER.info("Launching the shutdown handler...")
@@ -49,7 +49,7 @@ async def shutdown_handler(state: GlobalState):
     await state.influx_writer.close()
 
 
-@safe_shutdown
+@async_safe_shutdown
 async def node_manager(state: GlobalState):
     """ Handles shutting down and waking Jenkins instances """
     LOGGER.info("Launching the node manager task...")
