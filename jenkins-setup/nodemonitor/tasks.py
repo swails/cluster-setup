@@ -39,17 +39,6 @@ async def poll_running_jobs(state: GlobalState):
 
 
 @async_safe_shutdown
-async def shutdown_handler(state: GlobalState):
-    """ Handles the shutdown by closing the jenkins instance when requested """
-    LOGGER.info("Launching the shutdown handler...")
-    while not state.shutdown:
-        await asyncio.sleep(state.poll_frequency)
-    LOGGER.info("Shutdown detected - closing the jenkins instance")
-    await state.jenkins_instance.close()
-    await state.influx_writer.close()
-
-
-@async_safe_shutdown
 async def node_manager(state: GlobalState):
     """ Handles shutting down and waking Jenkins instances """
     LOGGER.info("Launching the node manager task...")

@@ -37,15 +37,12 @@ async def main(global_state):
     while True:
         all_tasks = [
             tasks.poll_running_jobs(global_state),
-            tasks.shutdown_handler(global_state),
             tasks.node_manager(global_state),
         ]
 
         await asyncio.gather(*all_tasks)
 
         logging.info("Shutdown detected. Resetting tasks")
-        global_state.jenkins_instance.reset_session()
-        global_state.influx_writer.reset_session()
         global_state.shutdown = False
 
 

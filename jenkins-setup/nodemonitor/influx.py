@@ -12,22 +12,16 @@ class InfluxWriter:
         self.db = db
         self.username = username
         self._password = password
-        self.reset_session()
-
-    def reset_session(self):
-        self._session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.username, self._password))
 
     async def write_point(self, node_name: str, power_mode: int):
         node_name = node_name.replace(" ", "\\ ")
         data = f"node_power,node_name={node_name} value={power_mode}"
-        async with self._session.post(
-            f"{self.url}/write", params=dict(db=self.db), data=data
-        ) as resp:
-            try:
-                resp.raise_for_status()
-            except aiohttp.ClientResponseError:
-                text = await resp.text()
-                LOGGER.exception(f"Failed to log influxdb event: {text}")
-
-    async def close(self):
-        await self._session.close()
+        async with aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.username, self._password)) as session:
+            async with session.post(
+                f"{self.url}/write", params=dict(db=self.db), data=data
+            ) as resp:
+                try:
+                    resp.raise_for_status()
+                except aiohttp.ClientResponseError:
+                    text = await resp.text()
+                    LOGGER.exception(f"Failed to log influxdb event: {text}")
