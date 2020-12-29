@@ -10,7 +10,12 @@ class InfluxWriter:
     def __init__(self, url: str, db: str, username: str, password: str):
         self.url = url
         self.db = db
-        self._session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(username, password))
+        self.username = username
+        self._password = password
+        self.reset_session()
+
+    def reset_session(self):
+        self._session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.username, self._password))
 
     async def write_point(self, node_name: str, power_mode: int):
         node_name = node_name.replace(" ", "\\ ")

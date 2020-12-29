@@ -67,7 +67,10 @@ class Jenkins:
         self.username = username
         self._token = token
         self.nodes = dict()
-        self._session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(username, token))
+        self.reset_session()
+
+    def reset_session(self):
+        self._session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.username, self._token))
 
     def __repr__(self):
         return f"<{self.__class__.__name__}; {len(self.nodes)} agents>"
