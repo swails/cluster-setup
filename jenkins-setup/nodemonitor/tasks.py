@@ -48,7 +48,7 @@ async def node_manager(state: GlobalState):
         # shutdown unless we have an empty queue
         if state.job_queue:
             await _boot_all_agents(state)
-        else:
+        elif not await state.jenkins_instance.get_queue():
             await _shutdown_idle_agents(state)
 
 
