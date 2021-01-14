@@ -47,9 +47,16 @@ async def node_manager(state: GlobalState):
         # Maybe we can improve this at some point, but for now simply power on everyone and don't
         # shutdown unless we have an empty queue
         if state.job_queue:
+            LOGGER.info("Job queue is not empty. Booting all agents if required")
             await _boot_all_agents(state)
-        elif not await state.jenkins_instance.get_queue():
-            await _shutdown_idle_agents(state)
+        else:
+            LOGGER.info("Checking job queue one more time")
+            queue = await state.jenkins_instance.get_queue()
+            if len(queue) > 0:
+                LOGGER.info("Seems a job has been queued!")
+            else:
+                LOGGER.info("No job queued -- shutting down agents")
+                await _shutdown_idle_agents(state)
 
 
 async def _boot_all_agents(state: GlobalState) -> bool:
