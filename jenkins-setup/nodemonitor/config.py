@@ -101,6 +101,8 @@ class NodemonitorConfiguration:
             ssh_config_kwargs["private_key"] = decrypt(ssh_config_kwargs["private_key"], PASSWORD)
         if "password" in ssh_config_kwargs:
             ssh_config_kwargs["password"] = decrypt(ssh_config_kwargs["password"], PASSWORD)
+        else:
+            ssh_config_kwargs["password"] = None
         ssh_config = SSHConfig.create(**ssh_config_kwargs)
         kwargs = dict(
             idle_time_before_launch=int(parser["SCHEDULER"].get("idle_time_before_launch", 300)),
