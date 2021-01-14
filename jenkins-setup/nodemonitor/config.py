@@ -96,7 +96,7 @@ class NodemonitorConfiguration:
         parser.read(filename)
         jenkins_config = JenkinsConfig.create(**parser["JENKINS"])
         influx_config = InfluxConfig.create(**parser["INFLUX"]) if "INFLUX" in parser else None
-        ssh_config_kwargs = parser["AGENTS"]
+        ssh_config_kwargs = dict(**parser["AGENTS"])
         if "private_key" in ssh_config_kwargs:
             ssh_config_kwargs["private_key"] = decrypt(ssh_config_kwargs["private_key"], PASSWORD)
         if "password" in ssh_config_kwargs:
