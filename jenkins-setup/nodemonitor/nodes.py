@@ -8,7 +8,7 @@ import logging
 import pathlib
 import time
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import asyncssh
 from wakeonlan import send_magic_packet
@@ -18,7 +18,7 @@ LOGGER = logging.getLogger(__name__)
 @dataclass
 class SSHConfig:
     username: str
-    password: Optional[str]
+    password: Union[str, None]
     private_key: asyncssh.SSHKey = None
 
     def options(self) -> dict:
