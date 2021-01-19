@@ -61,32 +61,10 @@ services:
       - postgresql
 
   local-nginx:
-    image: swails/qnap-nginx:80c14
+    image: swails/qnap-nginx:63baf
     restart: always
     ports:
       - 0.0.0.0:8082:80
-
-  wordpressdb:
-    image: mysql:8.0
-    restart: always
-    environment:
-      - MYSQL_DATABASE=wordpressdb
-      - MYSQL_USER=wordpress
-      - MYSQL_PASSWORD=PASS
-      - MYSQL_RANDOM_ROOT_PASSWORD=1
-    volumes:
-      - db:/var/lib/mysql
-
-  blog:
-    image: wordpress:5.6.0-php7.3-apache
-    restart: always
-    environment:
-      - WORDPRESS_DB_HOST=wordpressdb
-      - WORDPRESS_DB_USER=wordpress
-      - WORDPRESS_DB_PASSWORD=PASS
-      - WORDPRESS_DB_NAME=wordpressdb
-    volumes:
-      - wordpress:/var/www/html
 
 volumes:
   postgresql-data:
@@ -95,5 +73,3 @@ volumes:
   grafana-data:
   grafana-etc:
   grafana-share:
-  db:
-  wordpress:
