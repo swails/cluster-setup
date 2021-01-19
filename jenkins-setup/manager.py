@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import asyncio
 import sys
@@ -37,7 +37,6 @@ async def main(global_state):
     while True:
         all_tasks = [
             tasks.poll_running_jobs(global_state),
-            tasks.shutdown_handler(global_state),
             tasks.node_manager(global_state),
         ]
 

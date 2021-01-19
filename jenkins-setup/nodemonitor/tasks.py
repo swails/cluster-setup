@@ -39,17 +39,6 @@ async def poll_running_jobs(state: GlobalState):
 
 
 @async_safe_shutdown
-async def shutdown_handler(state: GlobalState):
-    """ Handles the shutdown by closing the jenkins instance when requested """
-    LOGGER.info("Launching the shutdown handler...")
-    while not state.shutdown:
-        await asyncio.sleep(state.poll_frequency)
-    LOGGER.info("Shutdown detected - closing the jenkins instance")
-    await state.jenkins_instance.close()
-    await state.influx_writer.close()
-
-
-@async_safe_shutdown
 async def node_manager(state: GlobalState):
     """ Handles shutting down and waking Jenkins instances """
     LOGGER.info("Launching the node manager task...")
@@ -58,9 +47,16 @@ async def node_manager(state: GlobalState):
         # Maybe we can improve this at some point, but for now simply power on everyone and don't
         # shutdown unless we have an empty queue
         if state.job_queue:
+            LOGGER.info("Job queue is not empty. Booting all agents if required")
             await _boot_all_agents(state)
         else:
-            await _shutdown_idle_agents(state)
+            LOGGER.info("Checking job queue one more time")
+            queue = await state.jenkins_instance.get_queue()
+            if len(queue) > 0:
+                LOGGER.info("Seems a job has been queued!")
+            else:
+                LOGGER.info("No job queued -- shutting down agents")
+                await _shutdown_idle_agents(state)
 
 
 async def _boot_all_agents(state: GlobalState) -> bool:

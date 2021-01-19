@@ -67,7 +67,6 @@ class Jenkins:
         self.username = username
         self._token = token
         self.nodes = dict()
-        self._session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(username, token))
 
     def __repr__(self):
         return f"<{self.__class__.__name__}; {len(self.nodes)} agents>"
@@ -78,18 +77,24 @@ class Jenkins:
         req_attr = "busyExecutors,name" if not self.nodes else "busyExecutors"
         params = dict(depth="1", tree=f"computer[{comp_attr},assignedLabels[{req_attr}]]")
         response = await self._request_json("get", "computer/api/json", params=params)
-        for computer in response['computer']:
-            self._process_computer(computer)
+        if response is None:
+            LOGGER.error("Failed getting computer list from Jenkins")
+        else:
+            for computer in response['computer']:
+                self._process_computer(computer)
 
     async def get_queue(self) -> List[QueuedJob]:
         """ Fetches all of the builds that are currently running """
         response = await self._request_json("get", f"queue/api/json")
         # Gets the list of all builds and the reasons they are not running
-        return [
-            QueuedJob(item['id'], item['stuck'], item['why'],
-                      datetime.datetime.fromtimestamp(item['inQueueSince'] / 1000))
-            for item in response['items']
-        ]
+        if response is None:
+            LOGGER.error("Failed getting queue")
+        else:
+            return [
+                QueuedJob(item['id'], item['stuck'], item['why'],
+                          datetime.datetime.fromtimestamp(item['inQueueSince'] / 1000))
+                for item in response['items']
+            ]
 
     async def build_job(self, job_path: str):
         # The href in a job with path my/path/here is /job/my/job/path/job/here
@@ -121,15 +126,13 @@ class Jenkins:
                             params: Dict[str, str] = None,
                             payload: Dict[str, str] = None,
                             data: bytes = None) -> Dict[str, Any]:
-        async with self._session.request(verb, f"{self.url}/{href}", params=params, data=data, json=payload) as resp:
-            async with resp:
-                if resp.status >= 400:
-                    text = await resp.text()
-                    LOGGER.warning(f"Failed requesting {href} - {resp.status} [{text}]")
-                try:
-                    return await resp.json()
-                except aiohttp.ContentTypeError:
-                    return await resp.text()
-
-    async def close(self):
-        await self._session.close()
+        async with aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.username, self._token)) as session:
+            async with session.request(verb, f"{self.url}/{href}", params=params, data=data, json=payload) as resp:
+                async with resp:
+                    if resp.status >= 400:
+                        text = await resp.text()
+                        LOGGER.warning(f"Failed requesting {href} - {resp.status} [{text}]")
+                    try:
+                        return await resp.json()
+                    except aiohttp.ContentTypeError:
+                        return await resp.text()

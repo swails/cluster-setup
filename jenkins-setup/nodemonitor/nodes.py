@@ -18,7 +18,7 @@ LOGGER = logging.getLogger(__name__)
 @dataclass
 class SSHConfig:
     username: str
-    password: str
+    password: Optional[str]
     private_key: asyncssh.SSHKey = None
 
     def options(self) -> dict:
