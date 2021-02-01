@@ -176,8 +176,8 @@ class JenkinsAgent:
 
     @busy_executors.setter
     def busy_executors(self, value):
-        if self._busy_executors > 0 and value == 0:
-            LOGGER.info(f"{self.name} has no more busy executors. Marking time last job finished")
+        if self._busy_executors > 0 or value > 0:
+            LOGGER.info(f"{self.name} is, or very recently was, busy.")
             self._time_last_job_finished = time.time()
         self._busy_executors = value
 
