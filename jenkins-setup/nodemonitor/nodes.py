@@ -109,13 +109,13 @@ class Node:
 
 NODES = {
 #   'Batman': Node('Batman', '192.168.1.3', 'C8:60:00:78:00:0C'),
-    'Green Lantern': Node('Green Lantern', '192.168.1.140', '04:D9:F5:B9:F7:0B'),
+#   'Green Lantern': Node('Green Lantern', '192.168.1.140', '04:D9:F5:B9:F7:0B'),
     'Green Arrow': Node('Green Arrow', '192.168.1.141', '1C:69:7A:31:52:21'),
     'Wonder Woman': Node('Wonder Woman', '192.168.1.142', '00:D8:61:FF:31:47'),
     'Supergirl': Node('Supergirl', '192.168.1.143', '2C:F0:5D:27:5E:AA'),
 }
 # Now add the CUDA nodes
-NODES['Green Lantern-cuda'] = NODES['Green Lantern']
+#NODES['Green Lantern-cuda'] = NODES['Green Lantern']
 NODES['Green Arrow-cuda'] = NODES['Green Arrow']
 NODES['Wonder Woman-cuda'] = NODES['Wonder Woman']
 NODES['Supergirl-cuda'] = NODES['Supergirl']
