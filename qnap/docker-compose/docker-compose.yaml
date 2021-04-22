@@ -21,7 +21,7 @@ services:
       start_period: 5s
 
   influx:
-    image: influxdb:1.8.3
+    image: influxdb:2.0.4
     environment:
       - INFLUXDB_DB=homeassistant
       - INFLUXDB_ADMIN_USER=admin
