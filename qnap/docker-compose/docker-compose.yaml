@@ -66,6 +66,31 @@ services:
     ports:
       - 0.0.0.0:8082:80
 
+  blog:
+    image: wordpress
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      WORDPRESS_DB_HOST: blogdb
+      WORDPRESS_DB_USER: wordpressdb
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpresspassword
+    volumes:
+      - wordpress:/var/www/html
+
+  blogdb:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpressdb
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpresspassword
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - blogdb:/var/lib/mysql
+
+
 volumes:
   postgresql-data:
   influxdb-data:
@@ -73,3 +98,4 @@ volumes:
   grafana-data:
   grafana-etc:
   grafana-share:
+  blogdb:
