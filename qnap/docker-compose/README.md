@@ -1,4 +1,4 @@
-# rdbs.yml
+# docker-compose.yaml
 
 This docker-compose script defines the containers that run on QNAP. The intent
 here is for the QNAP NAS to serve as a general-purpose server for things like
