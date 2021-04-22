@@ -99,3 +99,4 @@ volumes:
   grafana-etc:
   grafana-share:
   blogdb:
+  wordpress:
